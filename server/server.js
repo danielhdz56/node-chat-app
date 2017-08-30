@@ -19,14 +19,10 @@ io.on('connection', (socket) => { // socket represents the individual user conne
     socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
     socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
-    socket.on('createMessage', (message) => {
+    socket.on('createMessage', (message, callback) => {
         console.log('createMessage', message);
         io.emit('newMessage', generateMessage(message.from, message.text));
-        // socket.broadcast.emit('newMessage', { // socket.brodcast.emit sends it to everybody but this user
-        //     from: message.from,
-        //     text: message.text,
-        //     createdAt: new Date().getTime()
-        // });
+        callback('This is from the server.');
     });
 
     socket.on('disconnect', () => {
