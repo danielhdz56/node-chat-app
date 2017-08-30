@@ -15,7 +15,6 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => { // socket represents the individual user connected, instead of all users connected
     console.log('New user connected');
 
-  
     socket.on('createMessage', (message) => {
         console.log('createMessage', message);
         io.emit('newMessage', {
