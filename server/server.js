@@ -4,6 +4,8 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
+
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -16,8 +18,26 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => { // socket represents the individual user connected, instead of all users connected
     console.log('New user connected');
 
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+    socket.on('join', (params, callback) => {
+        if (!isRealString(params.name) || !isRealString(params.room)){
+            callback('Name and room name are required.')
+        }
+
+        socket.join(params.room);
+        // socket.leave(params.room);
+
+        // io.emit                  this emits to everyone connected
+        // socket.broadcast.emit    this sends it to everyone connected except the current user
+        // socket.emit              this emits an event specific to one user
+
+        // io.emit                  -> io.to(params.room).emit
+        // socket.broadcast.emit    -> socket.broadcast.to(params.room).emit
+        // socket.emit              xx no reason to specify by room bc we are sending it to a specific user
+
+        socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+        socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+        callback();
+    });
 
     socket.on('createMessage', (message, callback) => {
         console.log('createMessage', message);
